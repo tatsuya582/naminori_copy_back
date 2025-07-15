@@ -39,4 +39,25 @@ RSpec.describe "User Login API", type: :request do
       expect(json["error"]).to eq("Invalid Email or password.")
     end
   end
+
+  describe "DELETE /logout" do
+    it "logs out the user with valid JWT token" do
+      # 1. ログインしてJWTトークンを取得
+      post "/login", params: valid_params
+      token = response.headers["Authorization"]
+
+      # 2. トークン付きでログアウトを実行
+      delete "/logout", headers: { "Authorization" => token }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["message"]).to eq("Logged out successfully.")
+    end
+
+    it "returns unauthorized when JWT token is missing" do
+      delete "/logout"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end
