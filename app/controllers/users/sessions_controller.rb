@@ -10,9 +10,26 @@ class Users::SessionsController < Devise::SessionsController
   # end
 
   # POST /resource/sign_in
-  # def create
-  #   super
-  # end
+  def create
+    self.resource = warden.authenticate(auth_options)
+
+    if self.resource
+      sign_in(resource_name, resource)
+
+      p "User signed in: #{resource.email}"
+      token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
+      cookies.signed[:jwt] = {
+        value: token,
+        httponly: true,
+        secure: Rails.env.production?,
+        same_site: :lax
+      }
+
+      render json: { message: "ログインに成功しました", user: resource }, status: :ok
+    else
+      render json: { message: "ログインに失敗しました", errors: [ "メールアドレスまたはパスワードが正しくありません" ] }, status: :unauthorized
+    end
+  end
 
   # DELETE /resource/sign_out
   # def destroy
