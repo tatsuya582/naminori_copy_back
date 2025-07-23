@@ -70,6 +70,14 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   def register_success(resource)
     sign_in(resource)
+
+    token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
+      cookies.signed[:jwt] = {
+        value: token,
+        httponly: true,
+        secure: Rails.env.production?,
+        same_site: :lax
+      }
     render json: { message: "Signed up successfully.", user: resource }, status: :ok
   end
 
