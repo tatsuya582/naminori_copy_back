@@ -18,10 +18,4 @@ class ApplicationController < ActionController::API
     devise_parameter_sanitizer.permit(:sign_in, keys: [ :email, :password ])
     devise_parameter_sanitizer.permit(:account_update, keys: added_keys)
   end
-
-  def set_jwt_from_cookie
-    if cookies.signed[:jwt]
-      request.headers["Authorization"] = "Bearer #{cookies.signed[:jwt]}"
-    end
-  end
 end
