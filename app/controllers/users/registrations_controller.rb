@@ -2,6 +2,7 @@
 
 class Users::RegistrationsController < Devise::RegistrationsController
   include RackSessionFix
+  include JwtCookieHelper
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
 
@@ -70,14 +71,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   def register_success(resource)
     sign_in(resource)
-
-    token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
-      cookies.signed[:jwt] = {
-        value: token,
-        httponly: true,
-        secure: Rails.env.production?,
-        same_site: :lax
-      }
+    set_jwt_cookie(resource)
     render json: { message: "Signed up successfully.", user: resource }, status: :ok
   end
 

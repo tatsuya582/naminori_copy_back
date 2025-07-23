@@ -4,6 +4,7 @@ require "warden/jwt_auth"
 
 class Users::SessionsController < Devise::SessionsController
   include RackSessionFix
+  include JwtCookieHelper
   # before_action :configure_sign_in_params, only: [:create]
 
   # GET /resource/sign_in
@@ -17,15 +18,7 @@ class Users::SessionsController < Devise::SessionsController
 
     if self.resource
       sign_in(resource_name, resource)
-
-      token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
-      cookies.signed[:jwt] = {
-        value: token,
-        httponly: true,
-        secure: Rails.env.production?,
-        same_site: :lax
-      }
-
+      set_jwt_cookie(resource)
       render json: { message: "ログインに成功しました", user: resource }, status: :ok
     else
       render json: { message: "ログインに失敗しました", errors: [ "メールアドレスまたはパスワードが正しくありません" ] }, status: :unauthorized
