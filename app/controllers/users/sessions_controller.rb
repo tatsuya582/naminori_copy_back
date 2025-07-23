@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "warden/jwt_auth"
+
 class Users::SessionsController < Devise::SessionsController
   include RackSessionFix
   # before_action :configure_sign_in_params, only: [:create]
@@ -16,7 +18,6 @@ class Users::SessionsController < Devise::SessionsController
     if self.resource
       sign_in(resource_name, resource)
 
-      p "User signed in: #{resource.email}"
       token = Warden::JWTAuth::UserEncoder.new.call(resource, :user, nil).first
       cookies.signed[:jwt] = {
         value: token,
@@ -32,9 +33,10 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   # DELETE /resource/sign_out
-  # def destroy
-  #   super
-  # end
+  def destroy
+    cookies.delete(:jwt, secure: Rails.env.production?, same_site: :lax)
+    super
+  end
 
   # protected
 
