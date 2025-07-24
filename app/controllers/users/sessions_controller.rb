@@ -27,7 +27,7 @@ class Users::SessionsController < Devise::SessionsController
 
   # DELETE /resource/sign_out
   def destroy
-    cookies.delete(:jwt, secure: Rails.env.production?, same_site: :lax)
+    delete_jwt_cookie
     super
   end
 
