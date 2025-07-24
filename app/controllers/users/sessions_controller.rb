@@ -26,10 +26,9 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   # DELETE /resource/sign_out
-  def destroy
-    delete_jwt_cookie
-    super
-  end
+  # def destroy
+  #   super
+  # end
 
   # protected
 
@@ -44,14 +43,7 @@ class Users::SessionsController < Devise::SessionsController
   end
 
   def respond_to_on_destroy
-    current_user ? log_out_success : log_out_failure
-  end
-
-  def log_out_success
+    delete_jwt_cookie
     render json: { message: "Logged out successfully." }, status: :ok
-  end
-
-  def log_out_failure
-    render json: { message: "Logged out failure." }, status: :unauthorized
   end
 end
